@@ -2,6 +2,7 @@
 //! program. No Rust-AST types appear here (ADR-0005).
 
 pub mod expr;
+pub mod fixtures;
 pub mod item;
 pub mod lit;
 pub mod ops;
