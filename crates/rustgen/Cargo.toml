@@ -1,0 +1,18 @@
+[package]
+name = "vr-rustgen"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Visual Rust: IR -> Rust source backend"
+
+[lib]
+name = "vr_rustgen"
+
+[dependencies]
+vr-ir.workspace = true
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true
+prettyplease.workspace = true

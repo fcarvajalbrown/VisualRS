@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = ["crates/ir", "crates/rustgen", "crates/cli"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.94"   # MSRV — keep in sync with README
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/fcarvajalbrown/VisualRS"
+
+[workspace.dependencies]
+syn = { version = "2", features = ["full", "parsing", "printing", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+prettyplease = "0.2"
+vr-ir = { path = "crates/ir" }
+vr-rustgen = { path = "crates/rustgen" }

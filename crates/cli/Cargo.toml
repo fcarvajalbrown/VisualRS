@@ -1,0 +1,16 @@
+[package]
+name = "vr-cli"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Visual Rust: pipeline CLI"
+
+[[bin]]
+name = "vrc"
+path = "src/main.rs"
+
+[dependencies]
+vr-ir.workspace = true
+vr-rustgen.workspace = true
