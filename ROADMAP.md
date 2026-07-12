@@ -41,6 +41,11 @@ Scope locked by [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md): struc
 - [ ] Beginner tutorials and sample CLI utilities
 - [ ] Beta release to a small group of technical testers
 
+### Phase 5b: Guided Tutorials & Learning Track
+**Status:** Not Started (scope TBD — pending a dedicated brainstorm with Felipe)
+- [ ] Scope this out in depth (interactive in-editor learning path vs. written docs vs. sample-driven walkthroughs — decide via the brainstorming skill)
+- Placeholder: the PRD names students/educators as core users; this phase is where the in-depth teaching material lives, beyond Phase 5's "beginner tutorials" bullet.
+
 ## Post-MVP → 1.0
 
 Scope: [ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md) (Rust stays sole backend) + async + GUI apps + Plugin SDK.
