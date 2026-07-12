@@ -8,6 +8,7 @@ pub mod ops;
 pub mod pat;
 pub mod stmt;
 pub mod ty;
+pub mod validate;
 
 pub use expr::{BuiltinOp, Expr, MatchArm};
 pub use item::{
