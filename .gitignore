@@ -1,0 +1,11 @@
+/target
+**/*.rs.bk
+*.pdb
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Keep Cargo.lock committed: this workspace ships a binary (vr-cli).
