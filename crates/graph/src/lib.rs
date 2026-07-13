@@ -5,6 +5,7 @@
 //! `docs/superpowers/specs/2026-07-12-phase2-headless-graph-core-design.md`.
 
 pub mod build;
+pub mod fixtures;
 pub mod lower;
 pub mod model;
 pub mod validate;
