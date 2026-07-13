@@ -9,10 +9,10 @@ Status values: `Not Started` / `In Progress` / `Blocked` / `Done`.
 Scope locked by [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md): structs, enums, functions, pattern matching, `Result`/`Option`, file I/O, string/collection processing, one-shot sync HTTP calls. No async, no GUI, no networking servers, no custom trait/generic authoring.
 
 ### Phase 1: Foundation & Pipeline
-**Status:** In Progress (started 2026-07-12)
-- [ ] Define the Typed IR specification (target-agnostic per [ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md))
-- [ ] Build the core translation engine: hardcoded graph data → IR → Rust AST
-- [ ] Establish CI: test generated-code validity against stable Rust; smoke-test against beta/nightly per [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)
+**Status:** Done (completed 2026-07-12)
+- [x] Define the Typed IR specification (target-agnostic per [ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md))
+- [x] Build the core translation engine: hardcoded graph data → IR → Rust AST
+- [x] Establish CI: test generated-code validity against stable Rust; smoke-test against beta/nightly per [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)
 
 ### Phase 2: Editor Shell & Canvas
 **Status:** Not Started
