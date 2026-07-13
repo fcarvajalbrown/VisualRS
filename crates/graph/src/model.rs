@@ -41,22 +41,50 @@ pub struct Node {
 #[derive(Clone, Debug, PartialEq)]
 pub enum NodeKind {
     // --- statement / control (threaded by `Block::exec`) ---
-    Let { name: String, mutable: bool },
-    Assign { op: AssignOp },
-    ForEach { binding: String, body: Block },
+    Let {
+        name: String,
+        mutable: bool,
+    },
+    Assign {
+        op: AssignOp,
+    },
+    ForEach {
+        binding: String,
+        body: Block,
+    },
     ExprStmt,
-    Return { has_value: bool },
+    Return {
+        has_value: bool,
+    },
     // --- value (connected by `Block::data` / inline leaves) ---
-    Field { name: String },
+    Field {
+        name: String,
+    },
     Call,
-    Method { method: String },
-    Binary { op: BinaryOp },
-    Ref { mutable: bool },
-    StructLit { name: String, fields: Vec<String> },
-    Builtin { op: vr_ir::BuiltinOp },
+    Method {
+        method: String,
+    },
+    Binary {
+        op: BinaryOp,
+    },
+    Ref {
+        mutable: bool,
+    },
+    StructLit {
+        name: String,
+        fields: Vec<String>,
+    },
+    Builtin {
+        op: vr_ir::BuiltinOp,
+    },
     Try,
-    Match { arms: Vec<Arm> },
-    If { then: Block, els: Option<Block> },
+    Match {
+        arms: Vec<Arm>,
+    },
+    If {
+        then: Block,
+        els: Option<Block>,
+    },
     /// A path used directly as a value, e.g. `LineKind::Blank` as a block tail.
     PathValue(Vec<String>),
     /// A binding used directly as a value, e.g. `report` as a block tail.

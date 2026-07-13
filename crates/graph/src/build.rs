@@ -43,14 +43,26 @@ impl BlockBuilder {
     /// Insert a value node (no exec threading) and return its id.
     pub fn value(&mut self, kind: NodeKind) -> NodeId {
         let id = self.fresh();
-        self.nodes.insert(id, Node { kind, inline: vec![] });
+        self.nodes.insert(
+            id,
+            Node {
+                kind,
+                inline: vec![],
+            },
+        );
         id
     }
 
     /// Insert a statement node and thread it onto the exec chain.
     pub fn stmt(&mut self, kind: NodeKind) -> NodeId {
         let id = self.fresh();
-        self.nodes.insert(id, Node { kind, inline: vec![] });
+        self.nodes.insert(
+            id,
+            Node {
+                kind,
+                inline: vec![],
+            },
+        );
         match self.last_stmt {
             None => self.entry = Some(id),
             Some(prev) => self.exec.push((prev, id)),
