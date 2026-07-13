@@ -1,11 +1,11 @@
 //! Visual Rust Rust backend: lowers `vr_ir` into Rust source via syn/quote.
 
+mod item;
 mod lit;
+mod stmt;
 mod ty;
 // mod pat;   // Task 10
 // mod expr;  // Task 10
-// mod stmt;  // Task 10
-// mod item;  // Task 9
 
 use std::fmt;
 
@@ -47,13 +47,13 @@ pub fn generate(program: &vr_ir::Program) -> Result<String, GenError> {
     Ok(prettyplease::unparse(&file))
 }
 
-/// Emit the token stream for the whole file. Fully implemented in Task 9 once
-/// item generation exists; the Task 8 skeleton handles only an empty `main`.
+/// Emit the token stream for the whole file: each top-level item in order.
 fn emit_program(program: &vr_ir::Program) -> proc_macro2::TokenStream {
     use quote::quote;
-    // Placeholder until Task 9 wires real item generation:
-    let _ = program;
-    quote! { fn main() {} }
+    let items = program.items.iter().map(item::gen_item);
+    quote! {
+        #(#items)*
+    }
 }
 
 #[cfg(test)]
@@ -80,5 +80,45 @@ mod tests {
         let prog = Program { items: vec![] }; // no main
         let err = generate(&prog).unwrap_err();
         assert!(matches!(err, GenError::Validation(_)));
+    }
+
+    #[test]
+    fn generates_struct_and_enum() {
+        use vr_ir::*;
+        let prog = Program {
+            items: vec![
+                Item::Struct(StructDef {
+                    name: "Report".into(),
+                    fields: vec![Field {
+                        name: "words".into(),
+                        ty: Type::Usize,
+                    }],
+                }),
+                Item::Enum(EnumDef {
+                    name: "LineKind".into(),
+                    variants: vec![
+                        Variant {
+                            name: "Blank".into(),
+                            payload: VariantPayload::Unit,
+                        },
+                        Variant {
+                            name: "Content".into(),
+                            payload: VariantPayload::Unit,
+                        },
+                    ],
+                }),
+                Item::Function(FunctionDef {
+                    name: "main".into(),
+                    params: vec![],
+                    ret: Type::Unit,
+                    body: Block::new(vec![], None),
+                }),
+            ],
+        };
+        let src = generate(&prog).unwrap();
+        assert!(src.contains("struct Report"), "got:\n{src}");
+        assert!(src.contains("words: usize"), "got:\n{src}");
+        assert!(src.contains("enum LineKind"), "got:\n{src}");
+        assert!(src.contains("Blank"), "got:\n{src}");
     }
 }
