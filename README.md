@@ -23,6 +23,17 @@ Early, active development. See [`ROADMAP.md`](ROADMAP.md) for phase-by-phase sta
 - [`ROADMAP.md`](ROADMAP.md) — phase status, MVP through 1.0
 - [`docs/adr/`](docs/adr/README.md) — architecture decision records
 
+## Workspace layout
+
+A Cargo workspace of four crates. `vrc` (in `crates/cli`) runs the pipeline; the rest are libraries.
+
+- `crates/ir` (`vr-ir`) — the target-agnostic Typed IR. No Rust-AST dependencies ([ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md)).
+- `crates/graph` (`vr-graph`) — a Blueprints-style node/pin/wire graph model plus lowering to the IR; the headless core of the editor front-end ([ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md)). Depends on `vr-ir` only.
+- `crates/rustgen` (`vr-rustgen`) — lowers the IR to Rust source via `syn`/`quote`/`prettyplease`. The only crate that knows Rust syntax.
+- `crates/cli` (`vr-cli`) — the `vrc` binary.
+
+Pipeline: `vr-graph` -> `vr-ir` -> `vr-rustgen` -> Rust source. The Godot editor front-end (Phase 2, [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)) will sit on top of `vr-graph`.
+
 ## Rust version policy
 
 - **MSRV:** pinned in the workspace `Cargo.toml` (`workspace.package.rust-version`).

@@ -36,6 +36,10 @@ apply to everyone (human or agent) working in this repository.
 ## Architecture guardrails
 - `vr-ir` is target-agnostic (ADR-0005): it must never depend on `syn`/`quote`/
   `proc-macro2` or leak Rust-AST types. Only `vr-rustgen` knows Rust syntax.
+- `vr-graph` is a front-end that lowers a graph model to `vr-ir` (ADR-0008): it
+  depends on `vr-ir` only — never `syn`/`quote` or `godot`/`gdext`. The Godot/
+  `gdext` dependency belongs only to the future editor-plugin crate. Pipeline:
+  `vr-graph` -> `vr-ir` -> `vr-rustgen`.
 - MVP scope is CLI/scripting only (ADR-0002): no async, GUI, servers, or custom
   trait/generic authoring.
 - Emit Rust through `syn`/`quote`/`proc-macro2`, never a hand-rolled AST/string layer.
