@@ -7,6 +7,7 @@
 pub mod build;
 pub mod lower;
 pub mod model;
+pub mod validate;
 
 pub use lower::{lower, LowerError};
 
