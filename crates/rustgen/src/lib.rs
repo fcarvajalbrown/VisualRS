@@ -1,11 +1,11 @@
 //! Visual Rust Rust backend: lowers `vr_ir` into Rust source via syn/quote.
 
+mod expr;
 mod item;
 mod lit;
+mod pat;
 mod stmt;
 mod ty;
-// mod pat;   // Task 10
-// mod expr;  // Task 10
 
 use std::fmt;
 
@@ -120,5 +120,45 @@ mod tests {
         assert!(src.contains("words: usize"), "got:\n{src}");
         assert!(src.contains("enum LineKind"), "got:\n{src}");
         assert!(src.contains("Blank"), "got:\n{src}");
+    }
+
+    #[test]
+    fn generates_match_try_and_builtins() {
+        use vr_ir::*;
+        // fn main() {
+        //   let n = 1 + 2;
+        //   println!("n: {}", n);
+        // }
+        let prog = Program {
+            items: vec![Item::Function(FunctionDef {
+                name: "main".into(),
+                params: vec![],
+                ret: Type::Unit,
+                body: Block::new(
+                    vec![
+                        Stmt::Let {
+                            name: "n".into(),
+                            mutable: false,
+                            ty: None,
+                            value: Expr::Binary {
+                                op: BinaryOp::Add,
+                                lhs: Box::new(Expr::Lit(Literal::Int(1))),
+                                rhs: Box::new(Expr::Lit(Literal::Int(2))),
+                            },
+                        },
+                        Stmt::Expr(Expr::Builtin {
+                            op: BuiltinOp::PrintLine("n: {}".into()),
+                            args: vec![Expr::Var("n".into())],
+                        }),
+                    ],
+                    None,
+                ),
+            })],
+        };
+        let src = generate(&prog).unwrap();
+        // The backend always parenthesizes binary operands (precedence-safe),
+        // so the expected form is `(1 + 2)`, not `1 + 2`.
+        assert!(src.contains("let n = (1 + 2)"), "got:\n{src}");
+        assert!(src.contains(r#"println!("n: {}", n)"#), "got:\n{src}");
     }
 }
