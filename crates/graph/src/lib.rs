@@ -3,3 +3,10 @@
 //! only; it knows nothing about Rust syntax (that is `vr-rustgen`) or Godot
 //! (that is the deferred editor plugin). See
 //! `docs/superpowers/specs/2026-07-12-phase2-headless-graph-core-design.md`.
+
+pub mod model;
+
+pub use model::{
+    Arm, Block, DataEdge, EnumDecl, FunctionGraph, Graph, GraphItem, Leaf, Node, NodeId, NodeKind,
+    StructDecl, VariantDecl,
+};
