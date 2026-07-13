@@ -161,4 +161,31 @@ mod tests {
         assert!(src.contains("let n = (1 + 2)"), "got:\n{src}");
         assert!(src.contains(r#"println!("n: {}", n)"#), "got:\n{src}");
     }
+
+    #[test]
+    fn capstone_generates_readable_rust() {
+        let prog = vr_ir::fixtures::line_report();
+        let src = generate(&prog).expect("capstone must generate");
+
+        // Structural spot-checks across the whole MVP subset:
+        assert!(src.contains("struct Report"), "got:\n{src}");
+        assert!(src.contains("enum LineKind"), "got:\n{src}");
+        assert!(
+            src.contains("fn classify(line: &str) -> LineKind"),
+            "got:\n{src}"
+        );
+        assert!(
+            src.contains("fn build_report(text: &str) -> Report"),
+            "got:\n{src}"
+        );
+        assert!(
+            src.contains("fn run() -> Result<(), String>"),
+            "got:\n{src}"
+        );
+        assert!(src.contains("for line in text.lines()"), "got:\n{src}");
+        assert!(src.contains("match"), "got:\n{src}");
+        assert!(src.contains("std::fs::read_to_string"), "got:\n{src}");
+        assert!(src.contains("std::process::exit(1)"), "got:\n{src}");
+        assert!(src.contains("fn main()"), "got:\n{src}");
+    }
 }
