@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Hard gate: formatting, lints, build, and full test suite on stable.
+  # The generated-code compile+run test (crates/rustgen/tests/compile.rs)
+  # runs here under stable rustc, satisfying the stable validity requirement.
+  stable:
+    name: stable (gate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Formatting
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Build
+        run: cargo build --workspace --all-targets
+      - name: Test
+        run: cargo test --workspace
+
+  # Smoke test: catch upcoming breakage early. Non-blocking (ADR-0007): a red
+  # beta/nightly is a signal to investigate, not a merge blocker. Per project
+  # policy, when a release lands and a channel goes red, stay on it until green.
+  smoke:
+    name: smoke (${{ matrix.channel }})
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [beta, nightly]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ${{ matrix.channel }} toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.channel }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Test (generated-code validity on ${{ matrix.channel }})
+        run: cargo test --workspace

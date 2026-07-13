@@ -22,3 +22,14 @@ Early, active development. See [`ROADMAP.md`](ROADMAP.md) for phase-by-phase sta
 - [`PRD.md`](PRD.md) — vision, architecture, scope
 - [`ROADMAP.md`](ROADMAP.md) — phase status, MVP through 1.0
 - [`docs/adr/`](docs/adr/README.md) — architecture decision records
+
+## Rust version policy
+
+- **MSRV:** pinned in the workspace `Cargo.toml` (`workspace.package.rust-version`).
+  Keep this line and the manifest in sync when the floor moves.
+- **Generated code** targets **edition 2021**. Adopting a new edition requires a
+  dedicated ADR first (see [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)).
+- **CI:** stable is a hard gate (fmt, clippy, build, test, and the generated-code
+  compile+run check). Beta and nightly are non-blocking smoke tests that run the
+  same suite to catch breakage before it reaches stable. When a new release turns
+  a channel red, that is active work until all three channels are green again.
