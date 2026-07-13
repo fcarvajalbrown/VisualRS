@@ -15,7 +15,7 @@ Scope locked by [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md): struc
 - [x] Establish CI: test generated-code validity against stable Rust; smoke-test against beta/nightly per [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)
 
 ### Phase 2: Editor Shell & Canvas
-**Status:** Not Started
+**Status:** In Progress (headless graph core landed: `vr-graph` model + graph -> IR lowering + validation, proven at capstone parity; Godot `gdext` plugin, canvas, and live panel still pending — see [ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md))
 - [ ] Stand up the Godot editor plugin skeleton in Rust via `gdext` ([ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md))
 - [ ] Wire up `GraphEdit`/`GraphNode` for node placement, dragging, connections
 - [ ] Basic visual type-checking (reject invalid wire connections at the pin)

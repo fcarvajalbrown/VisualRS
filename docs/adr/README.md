@@ -18,3 +18,4 @@ ADR's `Status` to "Superseded by 00YY".
 | [0005](0005-target-agnostic-ir-rust-primary.md) | Target-agnostic IR; Rust primary through 1.0 | Accepted |
 | [0006](0006-output-gui-toolkit-egui-swappable.md) | Output GUI toolkit: egui, swappable | Accepted |
 | [0007](0007-rust-version-compatibility-policy.md) | Rust version/edition compatibility policy | Accepted |
+| [0008](0008-vr-graph-headless-front-end.md) | vr-graph: a headless graph front-end producing IR | Accepted |
