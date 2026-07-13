@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/ir", "crates/rustgen", "crates/cli"]
+members = ["crates/ir", "crates/rustgen", "crates/cli", "crates/graph"]
 
 [workspace.package]
 edition = "2021"
@@ -15,3 +15,4 @@ proc-macro2 = "1"
 prettyplease = "0.2"
 vr-ir = { path = "crates/ir" }
 vr-rustgen = { path = "crates/rustgen" }
+vr-graph = { path = "crates/graph" }

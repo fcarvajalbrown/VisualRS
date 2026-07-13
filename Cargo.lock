@@ -56,6 +56,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "vr-graph"
+version = "0.1.0"
+dependencies = [
+ "vr-ir",
+ "vr-rustgen",
+]
+
+[[package]]
 name = "vr-ir"
 version = "0.1.0"
 

@@ -1,0 +1,18 @@
+[package]
+name = "vr-graph"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Visual Rust: Blueprints-style graph model and graph -> IR lowering"
+
+[lib]
+name = "vr_graph"
+
+[dependencies]
+vr-ir.workspace = true
+# No syn/quote/proc-macro2 (ADR-0005). No godot/gdext (plugin is deferred).
+
+[dev-dependencies]
+vr-rustgen.workspace = true
+vr-ir.workspace = true
