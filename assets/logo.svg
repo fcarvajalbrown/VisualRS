@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="vrLogoTitle">
+  <title id="vrLogoTitle">Visual Rust logo: a gear with three wired nodes branching symmetrically to the right</title>
+  <line x1="145" y1="99" x2="180" y2="70" stroke="#6b7280" stroke-width="7" stroke-linecap="round"/>
+  <line x1="145" y1="121" x2="180" y2="150" stroke="#6b7280" stroke-width="7" stroke-linecap="round"/>
+  <line x1="147" y1="110" x2="180" y2="110" stroke="#2b6cb0" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="140.8,98.9 140.8,121.1 127.9,122.7 125.8,127.9 133.8,138.0 118.0,153.8 107.9,145.8 102.7,147.9 101.1,160.8 78.9,160.8 77.3,147.9 72.1,145.8 62.0,153.8 46.2,138.0 54.2,127.9 52.1,122.7 39.2,121.1 39.2,98.9 52.1,97.3 54.2,92.1 46.2,82.0 62.0,66.2 72.1,74.2 77.3,72.1 78.9,59.2 101.1,59.2 102.7,72.1 107.9,74.2 118.0,66.2 133.8,82.0 125.8,92.1 127.9,97.3" fill="#ce422b"/>
+  <circle cx="90" cy="110" r="24" fill="#a72e20"/>
+  <circle cx="90" cy="110" r="10" fill="#ffffff"/>
+  <circle cx="180" cy="70" r="12" fill="#ffffff" stroke="#6b7280" stroke-width="6"/>
+  <circle cx="180" cy="110" r="12" fill="#ffffff" stroke="#2b6cb0" stroke-width="6"/>
+  <circle cx="180" cy="150" r="12" fill="#ffffff" stroke="#6b7280" stroke-width="6"/>
+</svg>

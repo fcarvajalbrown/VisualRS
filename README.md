@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.png" alt="Visual Rust logo: three wired graph nodes feeding into a solid gear" width="140">
+  <img src="assets/logo.png" alt="Visual Rust logo: a gear with three wired nodes branching to the right" width="140">
 </p>
 
 # Visual Rust
