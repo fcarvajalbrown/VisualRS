@@ -2,7 +2,7 @@
   <img src="assets/logo.png" alt="Visual Rust logo: a gear with three wired nodes branching to the right" width="140">
 </p>
 
-# Visual Rust
+<h1 align="center">Visual Rust</h1>
 
 ![Status](https://img.shields.io/badge/status-MVP%20in%20progress-yellow)
 ![Language](https://img.shields.io/badge/language-Rust-orange)
