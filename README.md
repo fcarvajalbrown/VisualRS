@@ -4,10 +4,12 @@
 
 <h1 align="center">Visual Rust</h1>
 
-![Status](https://img.shields.io/badge/status-MVP%20in%20progress-yellow)
-![Language](https://img.shields.io/badge/language-Rust-orange)
-![Editor](https://img.shields.io/badge/editor-Godot%204%20%2B%20gdext-478cbf)
-![License](https://img.shields.io/badge/license-TBD-lightgrey)
+<p align="center">
+  <img src="https://img.shields.io/badge/status-MVP%20in%20progress-yellow" alt="Status">
+  <img src="https://img.shields.io/badge/language-Rust-orange" alt="Language">
+  <img src="https://img.shields.io/badge/editor-Godot%204%20%2B%20gdext-478cbf" alt="Editor">
+  <img src="https://img.shields.io/badge/license-TBD-lightgrey" alt="License">
+</p>
 
 **Visual Rust** is a node editor for visual programming in Rust. It's a Blueprints-style graph of typed pins and wires that compiles to real, idiomatic Rust source instead of running through an interpreter. Every node graph maps to `.rs` code, built with `cargo build`. What you ship is a native binary: no runtime attached, no scripting layer underneath it.
 
