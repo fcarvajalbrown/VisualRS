@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.png" alt="Visual Rust logo: three wired graph nodes feeding into a solid gear" width="140">
+</p>
+
 # Visual Rust
 
 ![Status](https://img.shields.io/badge/status-MVP%20in%20progress-yellow)
@@ -5,9 +9,23 @@
 ![Editor](https://img.shields.io/badge/editor-Godot%204%20%2B%20gdext-478cbf)
 ![License](https://img.shields.io/badge/license-TBD-lightgrey)
 
-**Visual Rust** is a node-based visual programming environment that generates real, idiomatic Rust rather than an interpreted scripting layer. Every node graph maps to `.rs` source, compiled with `cargo build`, so what you build runs as a native binary with no runtime attached.
+**Visual Rust** is a node editor for visual programming in Rust. It's a Blueprints-style graph of typed pins and wires that compiles to real, idiomatic Rust source instead of running through an interpreter. Every node graph maps to `.rs` code, built with `cargo build`. What you ship is a native binary: no runtime attached, no scripting layer underneath it.
 
-Its interaction model borrows from Unreal Engine Blueprints: typed pins, wires, and inline error states. The signature feature is making Rust's ownership model visible. Borrows and moves render as wire state on the canvas, and a borrow-checker violation shows up as an in-graph error rather than a wall of compiler text.
+The interaction model borrows heavily from Unreal Engine Blueprints: typed pins, wires, inline error states. That's the clearest existing reference point for a visual graph that actually reads like code. The signature feature is what it does with ownership. Borrows and moves render as wire state on the canvas, and a borrow-checker violation shows up as an in-graph error, not a wall of compiler output.
+
+## Features
+
+**Working today:**
+- Graph → Typed IR → Rust AST pipeline, implemented and CI-tested end to end ([Phase 1](ROADMAP.md))
+- Target-agnostic Typed IR — Rust is the primary backend, not a hardcoded one ([ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md))
+- Rust code generation through `syn`/`quote`/`prettyplease`, never a hand-rolled string template
+- `vr-graph`: a node/pin/wire graph model with validation (names, entry point, inputs, pin typing), lowering directly to the IR
+- CI gate on stable Rust (build, test, and a generated-code compile+run check), with non-blocking beta/nightly smoke tests
+
+**On the roadmap** (see [`ROADMAP.md`](ROADMAP.md) for current phase status):
+- Godot `GraphEdit`-based visual canvas, built entirely in Rust via `gdext`
+- Live, read-only "Generated Rust" panel next to the graph
+- Borrow-checker violation visualization directly on wires and pins
 
 ## Why
 

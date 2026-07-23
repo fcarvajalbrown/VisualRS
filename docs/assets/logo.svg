@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="vrLogoTitle">
+  <title id="vrLogoTitle">Visual Rust logo: three wired graph nodes feeding into a solid gear</title>
+  <line x1="52" y1="70" x2="110" y2="110" stroke="#6b7280" stroke-width="7" stroke-linecap="round"/>
+  <line x1="52" y1="150" x2="110" y2="110" stroke="#6b7280" stroke-width="7" stroke-linecap="round"/>
+  <line x1="52" y1="110" x2="110" y2="110" stroke="#2b6cb0" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="52" cy="70" r="12" fill="#ffffff" stroke="#2b6cb0" stroke-width="6"/>
+  <circle cx="52" cy="110" r="12" fill="#ffffff" stroke="#2b6cb0" stroke-width="6"/>
+  <circle cx="52" cy="150" r="12" fill="#ffffff" stroke="#2b6cb0" stroke-width="6"/>
+  <polygon points="110,78 152,94 163,136 137,168 95,163 76,126" fill="#ce422b"/>
+  <polygon points="110,95 140,107 148,134 130,155 100,151 87,124" fill="#a72e20"/>
+  <circle cx="112" cy="128" r="11" fill="#ffffff"/>
+</svg>
