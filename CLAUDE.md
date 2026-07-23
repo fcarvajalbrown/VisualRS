@@ -13,11 +13,11 @@ apply to everyone (human or agent) working in this repository.
 
 ## Writing
 - **No emojis** anywhere: code, comments, docs, commit messages, chat.
-- **Outward-facing non-technical prose** (README, announcements, marketing copy)
-  must go through the humanizer pass before publishing, to strip AI-writing tells
-  (em-dash-as-aside, "not just X, but Y" parallelism, uniform sentence rhythm,
-  repeated stock adjectives). Technical documents are exempt: ADRs, PRD, code
-  comments, this file.
+- **Outward-facing non-technical prose** (README, GitHub repo description/topics,
+  announcements, marketing copy) must go through the humanizer pass before
+  publishing, to strip AI-writing tells (em-dash-as-aside, "not just X, but Y"
+  parallelism, uniform sentence rhythm, repeated stock adjectives). Technical
+  documents are exempt: ADRs, PRD, code comments, this file.
 - Keep the doc structure: `PRD.md` (stable vision), `ROADMAP.md` (phase status),
   `docs/adr/` (one MADR-lite file per decision, immutable once Accepted; supersede
   via a new ADR). Decisions are settled in the ADRs. Do not silently diverge; if
