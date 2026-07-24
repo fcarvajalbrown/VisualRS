@@ -3,4 +3,5 @@
 //! generated Rust. See
 //! `docs/superpowers/specs/2026-07-24-vr-editor-walking-skeleton-design.md`.
 
+pub mod codegen;
 pub mod seed;
