@@ -1,5 +1,5 @@
 //! Binary entry point: boots the eframe window hosting the editor.
 
-fn main() {
-    // Wired to the eframe app in Task 5.
+fn main() -> eframe::Result<()> {
+    vr_editor::app::run()
 }
