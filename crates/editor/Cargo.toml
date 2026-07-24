@@ -1,0 +1,23 @@
+[package]
+name = "vr-editor"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Visual Rust: standalone egui node-graph editor"
+
+[lib]
+name = "vr_editor"
+
+[[bin]]
+name = "vr-editor"
+path = "src/main.rs"
+
+[dependencies]
+vr-ir.workspace = true
+vr-graph.workspace = true
+vr-rustgen.workspace = true
+egui.workspace = true
+eframe.workspace = true
+egui-snarl.workspace = true

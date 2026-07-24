@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/ir", "crates/rustgen", "crates/cli", "crates/graph"]
+members = ["crates/ir", "crates/rustgen", "crates/cli", "crates/graph", "crates/editor"]
 
 [workspace.package]
 edition = "2021"
@@ -16,3 +16,6 @@ prettyplease = "0.2"
 vr-ir = { path = "crates/ir" }
 vr-rustgen = { path = "crates/rustgen" }
 vr-graph = { path = "crates/graph" }
+egui = "0.35"
+eframe = "0.35"
+egui-snarl = "0.11"
