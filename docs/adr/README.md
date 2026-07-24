@@ -20,3 +20,5 @@ ADR's `Status` to "Superseded by 00YY".
 | [0007](0007-rust-version-compatibility-policy.md) | Rust version/edition compatibility policy | Accepted |
 | [0008](0008-vr-graph-headless-front-end.md) | vr-graph: a headless graph front-end producing IR | Accepted |
 | [0009](0009-editor-host-standalone-egui-app.md) | Editor host: standalone native app (egui) | Accepted |
+| [0010](0010-node-graph-crate-egui-snarl.md) | Node-graph canvas crate: egui_snarl | Accepted |
+| [0011](0011-upstream-improvements-to-dependencies.md) | Upstream improvements to dependencies; do not fork | Accepted |
