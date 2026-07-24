@@ -6,12 +6,14 @@ apply to everyone (human or agent) working in this repository.
 ## Commits and PRs
 - Use **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `chore:`,
   `refactor:`, `ci:`), scoped where useful (`feat(ir): ...`).
-- Commit per completed task, locally, as work progresses — use Conventional
-  Commits and split work into logical commits as you go. This is local-only.
-- **NEVER push to `origin` (any branch, and especially `origin/main`) without
-  Felipe's explicit permission in that same turn.** Committing locally is always
-  fine and expected; publishing to the remote is not. Do not push a feature
-  branch, do not push `main`, do not `git push` at all until Felipe says to.
+- Commit per completed task, locally, as work progresses — Conventional Commits,
+  split into logical commits as you go. **Committing directly to `main` (locally)
+  is fine for this repo**; no feature branch is required. No permission needed to
+  commit.
+- **NEVER `git push` to `origin` (any branch, and especially `origin/main`)
+  without Felipe's explicit permission in that same turn.** Local committing is
+  always fine and expected; publishing to the remote is not. Do not push `main`,
+  do not push a feature branch, do not `git push` at all until Felipe says to.
   Wait for the go-ahead every time — a prior push being allowed does not authorize
   the next one.
 - **Never open a pull request unless explicitly asked** in that same request.
