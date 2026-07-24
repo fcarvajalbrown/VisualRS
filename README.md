@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/status-MVP%20in%20progress-yellow" alt="Status">
   <img src="https://img.shields.io/badge/language-Rust-orange" alt="Language">
-  <img src="https://img.shields.io/badge/editor-Godot%204%20%2B%20gdext-478cbf" alt="Editor">
+  <img src="https://img.shields.io/badge/editor-egui%20native%20app-blue" alt="Editor">
   <img src="https://img.shields.io/badge/license-TBD-lightgrey" alt="License">
 </p>
 
@@ -25,7 +25,7 @@ The interaction model borrows heavily from Unreal Engine Blueprints: typed pins,
 - CI gate on stable Rust (build, test, and a generated-code compile+run check), with non-blocking beta/nightly smoke tests
 
 **On the roadmap** (see [`ROADMAP.md`](ROADMAP.md) for current phase status):
-- Godot `GraphEdit`-based visual canvas, built entirely in Rust via `gdext`
+- Standalone native editor for Windows, macOS, and Linux, with an `egui` node canvas, built entirely in Rust
 - Live, read-only "Generated Rust" panel next to the graph
 - Borrow-checker violation visualization directly on wires and pins
 
@@ -52,7 +52,7 @@ A Cargo workspace of four crates. `vrc` (in `crates/cli`) runs the pipeline; the
 - `crates/rustgen` (`vr-rustgen`) — lowers the IR to Rust source via `syn`/`quote`/`prettyplease`. The only crate that knows Rust syntax.
 - `crates/cli` (`vr-cli`) — the `vrc` binary.
 
-Pipeline: `vr-graph` -> `vr-ir` -> `vr-rustgen` -> Rust source. The Godot editor front-end (Phase 2, [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)) will sit on top of `vr-graph`.
+Pipeline: `vr-graph` -> `vr-ir` -> `vr-rustgen` -> Rust source. The standalone `egui` editor front-end (Phase 2, [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md)) will sit on top of `vr-graph`.
 
 ## Rust version policy
 

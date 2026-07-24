@@ -21,7 +21,7 @@ Rust offers unmatched performance and safety, but its steep learning curve — p
 
 - Not a general-purpose Blueprint-style scripting *runtime* — there is no interpreter shipped with generated programs. Output is always compiled, native Rust.
 - Not targeting mobile or WASM output in the MVP or 1.0 (revisit post-1.0).
-- Not a Godot competitor — Godot is a build-time implementation detail of the editor (see [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)), not a runtime dependency of programs you build with Visual Rust.
+- Not a Godot competitor — Godot is not part of the editor at all (the editor is a standalone `egui` app, [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md)); it appears only as a post-1.0 game-dev *output* target ([ADR-0004](docs/adr/0004-flagship-domain-godot-gdext-gamedev.md)), never as a runtime dependency of programs you build with Visual Rust.
 - Not attempting full language coverage on day one — MVP scope is deliberately narrow (see [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md)).
 
 ## Core Principles
@@ -36,7 +36,7 @@ Rust offers unmatched performance and safety, but its steep learning curve — p
 
 **The Pipeline:**
 
-1. **Editor Shell:** A Godot Engine editor plugin, written entirely in Rust via `gdext` (no GDScript). The infinite canvas uses Godot's built-in `GraphEdit`/`GraphNode` widgets rather than a hand-built canvas. See [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md) for why.
+1. **Editor Shell:** A standalone native cross-platform desktop application, written entirely in Rust with `egui`/`eframe` — a self-contained native binary per OS (a real `.exe` on Windows, plus macOS/Linux) with no engine or runtime to install. The infinite canvas uses an `egui` node-graph widget. See [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md) (which supersedes the earlier Godot-plugin host, [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)).
 2. **Semantic Analyzer:** Validates node connections against Rust's type system and ownership rules before code generation.
 3. **Typed Intermediate Representation (IR):** An abstract, graph-agnostic *and* target-agnostic format bridging the visual layout and the code generator ([ADR-0005](docs/adr/0005-target-agnostic-ir-rust-primary.md)).
 4. **Rust AST Generator:** Translates the IR into a valid `syn`/`quote`-based Rust Abstract Syntax Tree. The only backend implemented through 1.0.
@@ -55,8 +55,9 @@ Not building from scratch where mature building blocks exist:
 
 - **`syn` + `quote` + `proc-macro2`** — the standard Rust AST parse/generate toolchain; this is the Rust AST Generator stage.
 - **`cargo_metadata`** — parses `cargo check --message-format json` output for the Error Bubbling feature.
-- **Godot `GraphEdit`/`GraphNode`** — built-in node-graph UI widgets, replacing a hand-built canvas.
-- **`godot-rust`/`gdext`** — mature (2026) Rust bindings for Godot 4, used for real editor plugins and tools, not just games.
+- **`egui`/`eframe`** — pure-Rust immediate-mode GUI; the editor is a standalone native app built on it ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md)), and it is also the eventual GUI-output backend ([ADR-0006](docs/adr/0006-output-gui-toolkit-egui-swappable.md)).
+- **`egui` node-graph crate** (e.g. `egui_snarl` / `egui_node_graph2`) — a maintained node-graph widget supplies the canvas (ports, wires, zoom) instead of hand-building it; the exact crate is finalized in the editor's implementation brainstorm.
+- **`godot-rust`/`gdext`** — mature (2026) Rust bindings for Godot 4. Used only for the post-1.0 Godot GDExtension *output* pack ([ADR-0004](docs/adr/0004-flagship-domain-godot-gdext-gamedev.md)), not for the editor.
 - **RustViz** (`rustviz/rustviz`) and **BorIs** (`ChristianSchott/boris`) — existing academic/community ownership-visualization tools, worth studying for visual vocabulary before implementing ADR-0001.
 
 **Cautionary references:**

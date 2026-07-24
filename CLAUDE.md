@@ -37,9 +37,14 @@ apply to everyone (human or agent) working in this repository.
 - `vr-ir` is target-agnostic (ADR-0005): it must never depend on `syn`/`quote`/
   `proc-macro2` or leak Rust-AST types. Only `vr-rustgen` knows Rust syntax.
 - `vr-graph` is a front-end that lowers a graph model to `vr-ir` (ADR-0008): it
-  depends on `vr-ir` only — never `syn`/`quote` or `godot`/`gdext`. The Godot/
-  `gdext` dependency belongs only to the future editor-plugin crate. Pipeline:
-  `vr-graph` -> `vr-ir` -> `vr-rustgen`.
+  depends on `vr-ir` only — never `syn`/`quote`, `egui`, or `godot`/`gdext`.
+  Pipeline: `vr-graph` -> `vr-ir` -> `vr-rustgen`.
+- The editor is a standalone native app built with `egui`/`eframe` (ADR-0009,
+  superseding the Godot-plugin host of ADR-0003), living in the `vr-editor` crate.
+  `vr-editor` depends on `egui`/`eframe` + an `egui` node-graph crate + `vr-graph`
+  + `vr-rustgen`; it must not depend on `syn`/`quote`/`proc-macro2` directly.
+  `godot`/`gdext` is not used anywhere in the MVP — it belongs only to the future
+  post-1.0 Godot GDExtension output pack (ADR-0004), never the editor.
 - MVP scope is CLI/scripting only (ADR-0002): no async, GUI, servers, or custom
   trait/generic authoring.
 - Emit Rust through `syn`/`quote`/`proc-macro2`, never a hand-rolled AST/string layer.

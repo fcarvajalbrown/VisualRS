@@ -15,11 +15,14 @@ Scope locked by [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md): struc
 - [x] Establish CI: test generated-code validity against stable Rust; smoke-test against beta/nightly per [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)
 
 ### Phase 2: Editor Shell & Canvas
-**Status:** In Progress (headless graph core landed: `vr-graph` model + graph -> IR lowering + validation, proven at capstone parity; Godot `gdext` plugin, canvas, and live panel still pending — see [ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md))
-- [ ] Stand up the Godot editor plugin skeleton in Rust via `gdext` ([ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md))
-- [ ] Wire up `GraphEdit`/`GraphNode` for node placement, dragging, connections
-- [ ] Basic visual type-checking (reject invalid wire connections at the pin)
-- [ ] Live "Generated Rust" read-only panel
+**Status:** In Progress (headless graph core landed: `vr-graph` model + graph -> IR lowering + validation, proven at capstone parity; the standalone `egui` editor, canvas, and live panel still pending — see [ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md) and [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md))
+
+The editor is a standalone native cross-platform desktop app (a real `.exe` on Windows, plus macOS/Linux) built in Rust with `egui`, with no engine to install ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md), superseding the earlier Godot-plugin host in [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)). It is built on the headless `vr-graph` core: the canvas adapts its connection state into a `vr_graph::Graph`, then calls `validate()` and `lower()`.
+
+- [ ] Stand up the standalone `egui`/`eframe` editor app skeleton (`vr-editor` crate), producing a native binary on Windows/macOS/Linux ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md))
+- [ ] Wire up the `egui` node canvas for node placement, dragging, connections
+- [ ] Basic visual type-checking (reject invalid wire connections at the pin), driven by `vr_graph::Graph::validate()`
+- [ ] Live "Generated Rust" read-only panel (via `vr-graph` `lower()` + `vr-rustgen`)
 
 ### Phase 3: Ownership Mechanics
 **Status:** Not Started (design: [ADR-0001](docs/adr/0001-borrow-violation-visualization.md))

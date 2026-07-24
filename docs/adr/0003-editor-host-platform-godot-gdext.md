@@ -1,6 +1,6 @@
 # 0003 — Editor host platform: Godot + gdext
 
-- **Status:** Accepted
+- **Status:** Superseded by [0009](0009-editor-host-standalone-egui-app.md)
 - **Date:** 2026-07-12
 - **Deciders:** Felipe Carvajal Brown
 
