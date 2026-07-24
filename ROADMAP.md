@@ -15,11 +15,11 @@ Scope locked by [ADR-0002](docs/adr/0002-mvp-scope-cli-scripting-only.md): struc
 - [x] Establish CI: test generated-code validity against stable Rust; smoke-test against beta/nightly per [ADR-0007](docs/adr/0007-rust-version-compatibility-policy.md)
 
 ### Phase 2: Editor Shell & Canvas
-**Status:** In Progress (headless graph core landed: `vr-graph` model + graph -> IR lowering + validation, proven at capstone parity; the standalone `egui` editor, canvas, and live panel still pending — see [ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md) and [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md))
+**Status:** In Progress (headless graph core landed: `vr-graph` model + graph -> IR lowering + validation, proven at capstone parity. The standalone `egui`/`eframe` editor **walking skeleton** now renders the seed graph read-only on an `egui_snarl` canvas — Blueprint-style entry node plus execution/data pins and wires laid out as a begin-to-end flow — with a live read-only "Generated Rust" panel. Canvas editing, pin type-checking, and live-from-canvas regeneration are still pending — see [ADR-0008](docs/adr/0008-vr-graph-headless-front-end.md), [ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md), [ADR-0010](docs/adr/0010-node-graph-crate-egui-snarl.md), and the walking-skeleton spec in `docs/superpowers/specs/`.)
 
 The editor is a standalone native cross-platform desktop app (a real `.exe` on Windows, plus macOS/Linux) built in Rust with `egui`, with no engine to install ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md), superseding the earlier Godot-plugin host in [ADR-0003](docs/adr/0003-editor-host-platform-godot-gdext.md)). It is built on the headless `vr-graph` core: the canvas adapts its connection state into a `vr_graph::Graph`, then calls `validate()` and `lower()`.
 
-- [ ] Stand up the standalone `egui`/`eframe` editor app skeleton (`vr-editor` crate), producing a native binary on Windows/macOS/Linux ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md))
+- [x] Stand up the standalone `egui`/`eframe` editor app skeleton (`vr-editor` crate), producing a native binary on Windows/macOS/Linux ([ADR-0009](docs/adr/0009-editor-host-standalone-egui-app.md))
 - [ ] Wire up the `egui` node canvas for node placement, dragging, connections
 - [ ] Basic visual type-checking (reject invalid wire connections at the pin), driven by `vr_graph::Graph::validate()`
 - [ ] Live "Generated Rust" read-only panel (via `vr-graph` `lower()` + `vr-rustgen`)
