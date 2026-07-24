@@ -22,6 +22,11 @@ apply to everyone (human or agent) working in this repository.
   `docs/adr/` (one MADR-lite file per decision, immutable once Accepted; supersede
   via a new ADR). Decisions are settled in the ADRs. Do not silently diverge; if
   something seems wrong, stop and ask.
+- **An ADR is never rewritten, extended, or added to.** A new or changed decision
+  ALWAYS gets its own new, next-numbered ADR — never a new section bolted onto an
+  existing one, never an edit to an Accepted ADR's body. The only edit ever made to
+  an existing ADR is flipping its `Status` line to `Superseded by 00YY`. Do not even
+  propose folding a decision into an existing ADR.
 
 ## Rust version policy (see docs/adr/0007)
 - Generated code targets **edition 2021**. Adopting a new edition needs a
@@ -48,3 +53,12 @@ apply to everyone (human or agent) working in this repository.
 - MVP scope is CLI/scripting only (ADR-0002): no async, GUI, servers, or custom
   trait/generic authoring.
 - Emit Rust through `syn`/`quote`/`proc-macro2`, never a hand-rolled AST/string layer.
+- The node-graph canvas crate is **`egui_snarl`** (ADR-0010); it was picked over
+  `egui_node_graph2` on a maintenance/version check.
+
+## Dependencies (see ADR-0011)
+- **Upstream improvements, don't fork.** When our work produces a fix or
+  improvement to any third-party dependency (e.g. `egui_snarl`, `egui`/`eframe`),
+  contribute it back upstream as a pull request rather than carrying a private
+  patch or fork. A vendored patch is a last resort for an unmerged-but-needed
+  change; document it and track it for removal once upstream ships.
