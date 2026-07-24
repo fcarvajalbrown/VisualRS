@@ -22,3 +22,4 @@ ADR's `Status` to "Superseded by 00YY".
 | [0009](0009-editor-host-standalone-egui-app.md) | Editor host: standalone native app (egui) | Accepted |
 | [0010](0010-node-graph-crate-egui-snarl.md) | Node-graph canvas crate: egui_snarl | Accepted |
 | [0011](0011-upstream-improvements-to-dependencies.md) | Upstream improvements to dependencies; do not fork | Accepted |
+| [0012](0012-documentation-driven-development-workflow.md) | Development workflow: Documentation-Driven Development | Accepted |
