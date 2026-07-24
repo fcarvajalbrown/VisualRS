@@ -5,3 +5,4 @@
 
 pub mod codegen;
 pub mod seed;
+pub mod view;
