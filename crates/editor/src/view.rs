@@ -206,7 +206,10 @@ mod tests {
         let titles: Vec<String> = snarl.nodes().map(|n| n.title.clone()).collect();
         assert!(titles.iter().any(|t| t == "let n"), "titles: {titles:?}");
         assert!(titles.iter().any(|t| t == "expr"), "titles: {titles:?}");
-        assert!(titles.iter().any(|t| t.contains("Add")), "titles: {titles:?}");
+        assert!(
+            titles.iter().any(|t| t.contains("Add")),
+            "titles: {titles:?}"
+        );
         assert!(
             titles.iter().any(|t| t.contains("println!")),
             "titles: {titles:?}"
