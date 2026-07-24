@@ -2,6 +2,12 @@
 //! builds a `Snarl<NodeView>` (node data + positions + wires) and never touches
 //! an egui `Ui`. This renderer is permanent — it is also how a saved graph would
 //! later be loaded onto the canvas.
+//!
+//! It follows Unreal Blueprints' two-wire model (see the design spec §5.1):
+//! **statement** (impure) nodes carry white triangular execution pins threaded by
+//! the block's `exec` edges, while **value** (pure) nodes have only coloured data
+//! pins carrying the block's `data` edges. Execution pins live at index 0 on each
+//! side; data pins follow.
 
 use std::collections::BTreeMap;
 
@@ -17,20 +23,47 @@ use vr_graph::{Graph, GraphItem};
 pub struct NodeView {
     pub title: String,
     pub inputs: Vec<InputRow>,
-    pub has_output: bool,
+    pub outputs: Vec<OutputRow>,
 }
 
-/// One input pin's display: either a data-wire target (label only) or an inline
-/// literal/variable leaf rendered as read-only text.
+/// One input pin's display, top-to-bottom on the node's left side.
 #[derive(Clone, Debug, PartialEq)]
 pub enum InputRow {
+    /// White triangular execution-in pin (statement nodes only), at index 0.
+    Exec,
+    /// A data pin fed by a wire; the label names the port.
     Wired { label: String },
+    /// A data pin with an inline literal/variable leaf rendered as read-only text.
     Inline { text: String },
+}
+
+/// One output pin's display, top-to-bottom on the node's right side.
+#[derive(Clone, Debug, PartialEq)]
+pub enum OutputRow {
+    /// White triangular execution-out pin (statement nodes only), at index 0.
+    Exec,
+    /// The node's single data output (value nodes only).
+    Data,
+}
+
+/// Pin layout for a single node: the display `NodeView` plus the index maps
+/// `to_snarl` needs to attach exec and data wires to the right pins.
+struct Layout {
+    view: NodeView,
+    /// Input pin index of the exec-in pin, if this is a statement node.
+    exec_in: Option<usize>,
+    /// Model data port -> input pin index (offset past the exec pin).
+    data_in: BTreeMap<u16, usize>,
+    /// Output pin index of the exec-out pin, if this is a statement node.
+    exec_out: Option<usize>,
+    /// Output pin index of the data output, if this is a value node.
+    data_out: Option<usize>,
 }
 
 /// Render the first function body of `graph` onto a fresh `Snarl<NodeView>`:
 /// one snarl node per model node (in `NodeId` order, laid out top-to-bottom),
-/// one wire per data edge. A graph with no function renders as an empty `Snarl`.
+/// one data wire per data edge, one exec wire per exec edge. A graph with no
+/// function renders as an empty `Snarl`.
 pub fn to_snarl(graph: &Graph) -> Snarl<NodeView> {
     let mut snarl = Snarl::new();
 
@@ -47,62 +80,111 @@ pub fn to_snarl(graph: &Graph) -> Snarl<NodeView> {
         wired.entry(edge.to).or_default().push(edge.to_port);
     }
 
-    // Insert one snarl node per model node; remember the id mapping for wiring.
+    // Insert one snarl node per model node; remember the id mapping and the pin
+    // layout for wiring.
     let mut ids: BTreeMap<NodeId, egui_snarl::NodeId> = BTreeMap::new();
+    let mut layouts: BTreeMap<NodeId, Layout> = BTreeMap::new();
     for (i, (node_id, node)) in body.nodes.iter().enumerate() {
         let ports = wired.get(node_id).map(Vec::as_slice).unwrap_or(&[]);
-        let view = build_node_view(node, ports);
-        let snarl_id = snarl.insert_node(pos2(0.0, i as f32 * 120.0), view);
+        let layout = build_layout(node, ports);
+        let snarl_id = snarl.insert_node(pos2(0.0, i as f32 * 120.0), layout.view.clone());
         ids.insert(*node_id, snarl_id);
+        layouts.insert(*node_id, layout);
     }
 
-    // One wire per data edge: source output 0 -> destination input `to_port`.
+    // Data wires: value-node output -> destination's data input pin.
     for edge in &body.data {
-        if let (Some(&from), Some(&to)) = (ids.get(&edge.from), ids.get(&edge.to)) {
-            snarl.connect(
-                OutPinId {
-                    node: from,
-                    output: 0,
-                },
-                InPinId {
-                    node: to,
-                    input: edge.to_port as usize,
-                },
-            );
+        if let (Some(&from), Some(&to), Some(from_l), Some(to_l)) = (
+            ids.get(&edge.from),
+            ids.get(&edge.to),
+            layouts.get(&edge.from),
+            layouts.get(&edge.to),
+        ) {
+            if let (Some(out), Some(&input)) = (from_l.data_out, to_l.data_in.get(&edge.to_port)) {
+                snarl.connect(
+                    OutPinId {
+                        node: from,
+                        output: out,
+                    },
+                    InPinId { node: to, input },
+                );
+            }
+        }
+    }
+
+    // Exec wires: predecessor statement's exec-out -> successor's exec-in.
+    for (a, b) in &body.exec {
+        if let (Some(&from), Some(&to), Some(from_l), Some(to_l)) =
+            (ids.get(a), ids.get(b), layouts.get(a), layouts.get(b))
+        {
+            if let (Some(out), Some(input)) = (from_l.exec_out, to_l.exec_in) {
+                snarl.connect(
+                    OutPinId {
+                        node: from,
+                        output: out,
+                    },
+                    InPinId { node: to, input },
+                );
+            }
         }
     }
 
     snarl
 }
 
-/// Build the display data for one node. Input rows cover the union of inline
-/// ports and wired ports, in ascending port order.
-fn build_node_view(node: &Node, wired_ports: &[u16]) -> NodeView {
-    let mut ports: Vec<u16> = node
+/// Build the pin layout for one node. Statement (impure) nodes get an exec pin at
+/// index 0 on each side; data inputs follow. Value (pure) nodes get only data
+/// pins and a single data output.
+fn build_layout(node: &Node, wired_ports: &[u16]) -> Layout {
+    let statement = !is_value_node(&node.kind);
+
+    let mut data_ports: Vec<u16> = node
         .inline
         .iter()
         .map(|(p, _)| *p)
         .chain(wired_ports.iter().copied())
         .collect();
-    ports.sort_unstable();
-    ports.dedup();
+    data_ports.sort_unstable();
+    data_ports.dedup();
 
-    let inputs = ports
-        .iter()
-        .map(|&p| match node.inline.iter().find(|(ip, _)| *ip == p) {
+    let mut inputs = Vec::new();
+    let mut data_in = BTreeMap::new();
+    let exec_in = if statement {
+        inputs.push(InputRow::Exec);
+        Some(0)
+    } else {
+        None
+    };
+    for &p in &data_ports {
+        let idx = inputs.len();
+        let row = match node.inline.iter().find(|(ip, _)| *ip == p) {
             Some((_, leaf)) => InputRow::Inline {
                 text: leaf_text(leaf),
             },
             None => InputRow::Wired {
                 label: port_label(&node.kind, p),
             },
-        })
-        .collect();
+        };
+        inputs.push(row);
+        data_in.insert(p, idx);
+    }
 
-    NodeView {
-        title: node_title(&node.kind),
-        inputs,
-        has_output: is_value_node(&node.kind),
+    let (outputs, exec_out, data_out) = if statement {
+        (vec![OutputRow::Exec], Some(0), None)
+    } else {
+        (vec![OutputRow::Data], None, Some(0))
+    };
+
+    Layout {
+        view: NodeView {
+            title: node_title(&node.kind),
+            inputs,
+            outputs,
+        },
+        exec_in,
+        data_in,
+        exec_out,
+        data_out,
     }
 }
 
@@ -132,8 +214,8 @@ fn builtin_title(op: &vr_ir::BuiltinOp) -> String {
     }
 }
 
-/// Whether a node produces a value (has exactly one output pin). Statement /
-/// control nodes have none.
+/// Whether a node produces a value (pure node: data pins only, no exec pins).
+/// Statement / control nodes return `false` — they are impure and carry exec pins.
 fn is_value_node(kind: &NodeKind) -> bool {
     use NodeKind::*;
     matches!(
@@ -195,9 +277,10 @@ mod tests {
     }
 
     #[test]
-    fn seed_has_two_data_wires() {
+    fn seed_has_three_wires_two_data_one_exec() {
+        // Data: Add -> let n, println -> ExprStmt. Exec: let n -> ExprStmt.
         let snarl = to_snarl(&seed_graph());
-        assert_eq!(snarl.wires().count(), 2);
+        assert_eq!(snarl.wires().count(), 3);
     }
 
     #[test]
@@ -217,15 +300,30 @@ mod tests {
     }
 
     #[test]
-    fn binary_node_has_two_inline_literal_inputs() {
+    fn value_node_add_is_pure_with_two_inline_inputs() {
         let snarl = to_snarl(&seed_graph());
         let add = snarl
             .nodes()
             .find(|n| n.title.contains("Add"))
             .expect("Add node present");
+        // Pure: two inline data inputs, one data output, and no exec pins.
         assert_eq!(add.inputs.len(), 2);
         assert!(matches!(&add.inputs[0], InputRow::Inline { text } if text == "1"));
         assert!(matches!(&add.inputs[1], InputRow::Inline { text } if text == "2"));
-        assert!(add.has_output);
+        assert!(!add.inputs.iter().any(|r| matches!(r, InputRow::Exec)));
+        assert_eq!(add.outputs, vec![OutputRow::Data]);
+    }
+
+    #[test]
+    fn statement_node_let_has_exec_pins() {
+        let snarl = to_snarl(&seed_graph());
+        let let_n = snarl
+            .nodes()
+            .find(|n| n.title == "let n")
+            .expect("let n node present");
+        // Impure: exec-in at index 0, data input after it, exec-out on the right.
+        assert!(matches!(let_n.inputs[0], InputRow::Exec));
+        assert!(matches!(&let_n.inputs[1], InputRow::Wired { label } if label == "value"));
+        assert_eq!(let_n.outputs, vec![OutputRow::Exec]);
     }
 }

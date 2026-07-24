@@ -8,7 +8,7 @@ use egui_snarl::{InPin, OutPin, Snarl};
 
 use crate::codegen::generate_source;
 use crate::seed::seed_graph;
-use crate::view::{to_snarl, InputRow, NodeView};
+use crate::view::{to_snarl, InputRow, NodeView, OutputRow};
 
 /// The whole editor: seed graph -> read-only `Snarl` + cached generated source.
 /// The `Graph` is the source of truth; here it is consumed once at startup since
@@ -82,7 +82,7 @@ impl SnarlViewer<NodeView> for SkeletonViewer {
     }
 
     fn outputs(&mut self, node: &NodeView) -> usize {
-        usize::from(node.has_output)
+        node.outputs.len()
     }
 
     fn show_input(
@@ -91,25 +91,30 @@ impl SnarlViewer<NodeView> for SkeletonViewer {
         ui: &mut egui::Ui,
         snarl: &mut Snarl<NodeView>,
     ) -> impl SnarlPin + 'static {
-        let node = &snarl[pin.id.node];
-        match &node.inputs[pin.id.input] {
+        // White triangle = execution pin (Blueprint style); circle = data pin.
+        match &snarl[pin.id.node].inputs[pin.id.input] {
+            InputRow::Exec => PinInfo::triangle().with_fill(egui::Color32::WHITE),
             InputRow::Wired { label } => {
                 ui.label(label);
+                PinInfo::circle()
             }
             InputRow::Inline { text } => {
                 ui.label(egui::RichText::new(text).monospace());
+                PinInfo::circle()
             }
         }
-        PinInfo::circle()
     }
 
     fn show_output(
         &mut self,
-        _pin: &OutPin,
+        pin: &OutPin,
         _ui: &mut egui::Ui,
-        _snarl: &mut Snarl<NodeView>,
+        snarl: &mut Snarl<NodeView>,
     ) -> impl SnarlPin + 'static {
-        PinInfo::circle()
+        match &snarl[pin.id.node].outputs[pin.id.output] {
+            OutputRow::Exec => PinInfo::triangle().with_fill(egui::Color32::WHITE),
+            OutputRow::Data => PinInfo::circle(),
+        }
     }
 
     // Read-only: refuse every mutation.
