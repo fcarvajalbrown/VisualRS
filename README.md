@@ -37,6 +37,12 @@ Rust's performance and memory safety come with a steep learning curve, most of i
 
 Early, active development. See [`ROADMAP.md`](ROADMAP.md) for phase-by-phase status and [`PRD.md`](PRD.md) for the full product spec. Every non-obvious design and architecture decision is recorded in [`docs/adr/`](docs/adr/README.md).
 
+## How it's built: Documentation-Driven Development
+
+Visual Rust is written documentation-first. A feature's behavior is described in a design spec, an ADR, or the docs before its code exists. The code is then written to match what was documented, and tests confirm it stays that way. [ADR-0012](docs/adr/0012-documentation-driven-development-workflow.md) records the full workflow.
+
+The approach has a lineage worth naming. "Documentation-Driven Development" starts from a blunt premise: from a user's point of view, a feature that isn't documented doesn't exist, and one documented wrong is broken. Its best-known sibling is Readme-Driven Development, which Tom Preston-Werner set out in a 2010 essay, arguing that until you have described the software in prose you do not really know what you are building. Both answered the same gap. Waterfall specified everything up front and exhausted itself doing it; agile pushed back so far that documentation often went thin or missing; writing the contract in words first lands between the two.
+
 ## Documentation
 
 - [`PRD.md`](PRD.md) — vision, architecture, scope
