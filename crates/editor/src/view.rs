@@ -8,14 +8,28 @@
 //! the block's `exec` edges, while **value** (pure) nodes have only coloured data
 //! pins carrying the block's `data` edges. Execution pins live at index 0 on each
 //! side; data pins follow.
+//!
+//! Layout reads begin-to-end like a Blueprint graph: a synthetic entry node (the
+//! function name) sits at the far left, statements run left-to-right along one
+//! execution spine threaded by the white exec wire, and pure value nodes sit above
+//! the statement that consumes them, feeding data down.
 
 use std::collections::BTreeMap;
 
-use egui::pos2;
+use egui::{pos2, Pos2};
 use egui_snarl::{InPinId, OutPinId, Snarl};
 
 use vr_graph::model::{Leaf, Node, NodeId, NodeKind};
 use vr_graph::{Graph, GraphItem};
+
+/// Horizontal spacing between spine columns.
+const COL_W: f32 = 220.0;
+/// Vertical position of the execution spine row.
+const ROW_Y: f32 = 260.0;
+/// How far above the spine a pure value node sits from its consumer.
+const PURE_DY: f32 = 150.0;
+/// Extra vertical offset when several pure nodes stack above one statement.
+const STACK_DY: f32 = 120.0;
 
 /// Per-node display data. The `SnarlViewer` in `app.rs` reads this to draw a
 /// node's title and pins; this module never touches egui `Ui`.
@@ -40,13 +54,13 @@ pub enum InputRow {
 /// One output pin's display, top-to-bottom on the node's right side.
 #[derive(Clone, Debug, PartialEq)]
 pub enum OutputRow {
-    /// White triangular execution-out pin (statement nodes only), at index 0.
+    /// White triangular execution-out pin (entry and statement nodes), at index 0.
     Exec,
     /// The node's single data output (value nodes only).
     Data,
 }
 
-/// Pin layout for a single node: the display `NodeView` plus the index maps
+/// Pin layout for a single model node: the display `NodeView` plus the index maps
 /// `to_snarl` needs to attach exec and data wires to the right pins.
 struct Layout {
     view: NodeView,
@@ -61,35 +75,106 @@ struct Layout {
 }
 
 /// Render the first function body of `graph` onto a fresh `Snarl<NodeView>`:
-/// one snarl node per model node (in `NodeId` order, laid out top-to-bottom),
-/// one data wire per data edge, one exec wire per exec edge. A graph with no
-/// function renders as an empty `Snarl`.
+/// a synthetic entry node plus one snarl node per model node, wired by data edges
+/// and threaded by exec edges into a left-to-right flow. A graph with no function
+/// renders as an empty `Snarl`.
 pub fn to_snarl(graph: &Graph) -> Snarl<NodeView> {
     let mut snarl = Snarl::new();
 
-    let Some(body) = graph.items.iter().find_map(|item| match item {
-        GraphItem::Function(f) => Some(&f.body),
+    let Some((fname, body)) = graph.items.iter().find_map(|item| match item {
+        GraphItem::Function(f) => Some((f.name.as_str(), &f.body)),
         _ => None,
     }) else {
         return snarl;
     };
 
-    // Ports that are fed by a data edge, grouped per destination node.
+    // Ports fed by a data edge, grouped per destination node.
     let mut wired: BTreeMap<NodeId, Vec<u16>> = BTreeMap::new();
     for edge in &body.data {
         wired.entry(edge.to).or_default().push(edge.to_port);
     }
 
-    // Insert one snarl node per model node; remember the id mapping and the pin
-    // layout for wiring.
-    let mut ids: BTreeMap<NodeId, egui_snarl::NodeId> = BTreeMap::new();
+    // Pin layout for every model node.
     let mut layouts: BTreeMap<NodeId, Layout> = BTreeMap::new();
-    for (i, (node_id, node)) in body.nodes.iter().enumerate() {
+    for (node_id, node) in &body.nodes {
         let ports = wired.get(node_id).map(Vec::as_slice).unwrap_or(&[]);
-        let layout = build_layout(node, ports);
-        let snarl_id = snarl.insert_node(pos2(0.0, i as f32 * 120.0), layout.view.clone());
-        ids.insert(*node_id, snarl_id);
-        layouts.insert(*node_id, layout);
+        layouts.insert(*node_id, build_layout(node, ports));
+    }
+
+    // Statement execution order, walked from `entry` along exec successors.
+    let mut succ: BTreeMap<NodeId, NodeId> = BTreeMap::new();
+    for (a, b) in &body.exec {
+        succ.insert(*a, *b);
+    }
+    let mut order: Vec<NodeId> = Vec::new();
+    let mut cur = body.entry;
+    while let Some(id) = cur {
+        if order.contains(&id) {
+            break; // defensive: never loop on a malformed cycle
+        }
+        order.push(id);
+        cur = succ.get(&id).copied();
+    }
+    // Column index per statement; the entry node reserves column 0.
+    let mut col: BTreeMap<NodeId, usize> = BTreeMap::new();
+    for (i, id) in order.iter().enumerate() {
+        col.insert(*id, i + 1);
+    }
+
+    // Positions: statements on the spine, pure nodes stacked above their consumer.
+    let mut positions: BTreeMap<NodeId, Pos2> = BTreeMap::new();
+    for (id, &c) in &col {
+        positions.insert(*id, pos2(c as f32 * COL_W, ROW_Y));
+    }
+    let mut stacked: BTreeMap<usize, usize> = BTreeMap::new();
+    for (id, layout) in &layouts {
+        if layout.exec_in.is_some() {
+            continue; // statement: already placed on the spine
+        }
+        // Column of the statement this value node feeds (via a data edge).
+        let consumer_col = body
+            .data
+            .iter()
+            .find(|e| e.from == *id)
+            .and_then(|e| col.get(&e.to).copied())
+            .unwrap_or(0);
+        let k = stacked.entry(consumer_col).or_insert(0);
+        let y = ROW_Y - PURE_DY - (*k as f32) * STACK_DY;
+        *k += 1;
+        positions.insert(*id, pos2(consumer_col as f32 * COL_W, y));
+    }
+
+    // Insert the synthetic entry node (function name) at the head of the spine.
+    let begin_id = snarl.insert_node(
+        pos2(0.0, ROW_Y),
+        NodeView {
+            title: fname.to_string(),
+            inputs: vec![],
+            outputs: vec![OutputRow::Exec],
+        },
+    );
+
+    // Insert every model node at its computed position.
+    let mut ids: BTreeMap<NodeId, egui_snarl::NodeId> = BTreeMap::new();
+    for (id, layout) in &layouts {
+        let pos = positions.get(id).copied().unwrap_or(pos2(0.0, 0.0));
+        let sid = snarl.insert_node(pos, layout.view.clone());
+        ids.insert(*id, sid);
+    }
+
+    // Exec wire from the entry node into the first statement.
+    if let Some(entry) = body.entry {
+        if let (Some(&to), Some(input)) =
+            (ids.get(&entry), layouts.get(&entry).and_then(|l| l.exec_in))
+        {
+            snarl.connect(
+                OutPinId {
+                    node: begin_id,
+                    output: 0,
+                },
+                InPinId { node: to, input },
+            );
+        }
     }
 
     // Data wires: value-node output -> destination's data input pin.
@@ -271,16 +356,29 @@ mod tests {
     use crate::seed::seed_graph;
 
     #[test]
-    fn seed_produces_four_nodes() {
+    fn seed_produces_five_nodes_including_entry() {
+        // 4 model nodes (Add, let n, println, expr) + 1 synthetic entry node.
         let snarl = to_snarl(&seed_graph());
-        assert_eq!(snarl.nodes().count(), 4);
+        assert_eq!(snarl.nodes().count(), 5);
     }
 
     #[test]
-    fn seed_has_three_wires_two_data_one_exec() {
-        // Data: Add -> let n, println -> ExprStmt. Exec: let n -> ExprStmt.
+    fn seed_has_four_wires_two_data_two_exec() {
+        // Data: Add -> let n, println -> expr.
+        // Exec: main -> let n, let n -> expr.
         let snarl = to_snarl(&seed_graph());
-        assert_eq!(snarl.wires().count(), 3);
+        assert_eq!(snarl.wires().count(), 4);
+    }
+
+    #[test]
+    fn entry_node_is_named_for_the_function_with_one_exec_output() {
+        let snarl = to_snarl(&seed_graph());
+        let entry = snarl
+            .nodes()
+            .find(|n| n.title == "main")
+            .expect("entry node present");
+        assert!(entry.inputs.is_empty());
+        assert_eq!(entry.outputs, vec![OutputRow::Exec]);
     }
 
     #[test]

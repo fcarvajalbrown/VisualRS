@@ -147,11 +147,27 @@ Nodes split into two families, mirroring Blueprints' impure/pure split:
   **no** exec pins — only data pins — and are evaluated on demand where their
   single data output feeds a statement (or another value node).
 
-For the seed graph this yields: `Binary(Add)` (pure) feeds `let n` by a data
-wire; `let n` (statement) is threaded by an exec wire to `ExprStmt` (statement);
-the `println!` `Builtin` (pure) feeds `ExprStmt` by a data wire. Three wires
-total: two data, one exec. The `entry` statement's exec-in is left unconnected
-(no `Event`/entry node is synthesised in the skeleton).
+**Entry node and layout (begin-to-end flow).** So the graph reads as a flow with
+a clear beginning, `to_snarl` synthesises a **entry node** titled with the
+function name (`main`) at the far left — a view-only node (no `vr_graph` model
+counterpart) with a single exec-out pin, the analogue of Blueprints' `Event
+BeginPlay`. Statements are laid out left-to-right along one **execution spine**
+(entry in column 0, then each statement in `exec` order), threaded by the white
+exec wire `main -> let n -> expr`. Pure value nodes sit **above** the statement
+that consumes them, feeding data down into it; when several feed one statement
+they stack upward.
+
+For the seed graph this yields five nodes and four wires:
+
+```
+        (1 + 2)              println!("n: {}")      <- pure value nodes
+           | data                | data
+  main --> let n  ---- exec ---> expr               <- entry + execution spine
+```
+
+- Data wires (2): `Binary(Add) -> let n`, `println! Builtin -> expr`.
+- Exec wires (2): `main -> let n` (entry into the first statement),
+  `let n -> expr`.
 
 ## 6. Error handling
 
@@ -164,8 +180,9 @@ not panic on any graph state.
 
 - **Headless unit tests (TDD):**
   - `view::to_snarl` — given the seed `Graph`, assert the produced `Snarl` node
-    count, node titles, data-wire endpoints, total wire count (two data + one
-    exec), and that statement nodes carry exec pins while value nodes do not
+    count (five: four model nodes + the synthetic entry node), node titles, total
+    wire count (four: two data + two exec), the entry node's shape (no inputs, one
+    exec output), and that statement nodes carry exec pins while value nodes do not
     (§5.1).
   - `codegen::generate_source` — given the seed `Graph`, assert the output is
     `Ok` and contains `fn main`, `1 + 2`, and `println`.
@@ -195,3 +212,16 @@ the canvas-editing, pin-type-check, and live-panel bullets that follow.
   `egui_snarl` (records the maintenance/version check ADR-0009 deferred).
 - [ADR-0011](../../adr/0011-upstream-improvements-to-dependencies.md): upstream
   improvements to dependencies rather than fork, plus the matching CLAUDE.md rule.
+
+## 10. Deferred to a later phase
+
+- **Animated execution wire.** Unreal Blueprints animate the exec wire during play
+  — a pulse/marble travels the white wire in run order. The skeleton is static
+  (there is no "running" graph state to animate yet) and `egui_snarl` draws static
+  wires, so this is deferred. When taken up it is likely custom wire drawing along
+  the exec path; per [ADR-0011](../../adr/0011-upstream-improvements-to-dependencies.md)
+  the first move is an upstream contribution to `egui_snarl` rather than a fork.
+- **Auto-layout beyond a single linear spine.** The current layout assumes one
+  linear statement chain (entry -> ... -> tail) with pure nodes stacked above their
+  consumer. Branching control flow (`If`/`Match` with multiple exec paths) and
+  nested child blocks need a real layout pass, deferred with node authoring.
