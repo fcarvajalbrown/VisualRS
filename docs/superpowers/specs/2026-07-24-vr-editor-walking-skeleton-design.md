@@ -2,6 +2,12 @@
 
 - **Date:** 2026-07-24
 - **Status:** Approved (brainstorm), ready for implementation plan
+- **Revision (2026-07-24):** Exec-wire (statement-order) threading is **un-deferred**
+  and now in scope for the skeleton. Rendering statement nodes as disconnected
+  islands (data wires only) read as broken. The canvas now follows Unreal
+  Blueprints' two-wire model: a white **execution** wire threads statements
+  (impure nodes) in run order, alongside the coloured **data** wires. See the new
+  §5.1. Nested child blocks remain deferred.
 - **Owner:** Felipe Carvajal Brown
 - **Related:** [ADR-0009](../../adr/0009-editor-host-standalone-egui-app.md)
   (standalone egui host), [ADR-0010](../../adr/0010-node-graph-crate-egui-snarl.md)
@@ -27,8 +33,6 @@ proof the stack works, and the base the real editor grows from.
 - Rendering nested blocks — a `ForEach`/`If`/`Match` node owning its own child
   `Block`. The seed graph is flat precisely so the skeleton does not have to solve
   "a block of nodes living inside a node" yet.
-- Exec-wire (statement-order) styling. Only data wires are drawn; statement order
-  is conveyed by vertical node placement.
 - Pin-level type-error rendering (ROADMAP Phase 2 bullet 3), which lands after
   canvas editing.
 - Multiple functions, and visual editing of struct/enum declarations.
@@ -121,6 +125,34 @@ output.
   valid, so it normally shows Rust.
 - Top bar: stub menu (`File`, `Help`) with no live actions yet.
 
+### 5.1 Execution vs data wires (Blueprint model)
+
+The canvas draws **two** kinds of pin/wire, exactly as Unreal Blueprints does:
+
+- **Execution pins/wires** — a white, triangular pin on each **statement** node's
+  input (top-left) and output (top-right) side. A white exec wire threads
+  statements in run order, following the block's `exec` edges (with `entry` as the
+  head of the chain). This is what makes the graph read as a *flow* instead of
+  disconnected islands.
+- **Data pins/wires** — the existing coloured, circular pins carrying values
+  along the block's `data` edges.
+
+Nodes split into two families, mirroring Blueprints' impure/pure split:
+
+- **Statement (impure) nodes** — `Let`, `Assign`, `ForEach`, `ExprStmt`,
+  `Return`. They carry exec pins (in + out) and are threaded by the exec wire.
+  Their exec-in pin sits at input index 0; data inputs follow.
+- **Value (pure) nodes** — `Binary`, `Builtin`, `Field`, `Call`, `Method`,
+  `Ref`, `StructLit`, `Try`, `Match`, `If`, `PathValue`, `VarValue`. They have
+  **no** exec pins — only data pins — and are evaluated on demand where their
+  single data output feeds a statement (or another value node).
+
+For the seed graph this yields: `Binary(Add)` (pure) feeds `let n` by a data
+wire; `let n` (statement) is threaded by an exec wire to `ExprStmt` (statement);
+the `println!` `Builtin` (pure) feeds `ExprStmt` by a data wire. Three wires
+total: two data, one exec. The `entry` statement's exec-in is left unconnected
+(no `Event`/entry node is synthesised in the skeleton).
+
 ## 6. Error handling
 
 `generate_source` never panics: a `validate()` failure yields the joined error
@@ -132,7 +164,9 @@ not panic on any graph state.
 
 - **Headless unit tests (TDD):**
   - `view::to_snarl` — given the seed `Graph`, assert the produced `Snarl` node
-    count, node titles, and data-wire endpoints.
+    count, node titles, data-wire endpoints, total wire count (two data + one
+    exec), and that statement nodes carry exec pins while value nodes do not
+    (§5.1).
   - `codegen::generate_source` — given the seed `Graph`, assert the output is
     `Ok` and contains `fn main`, `1 + 2`, and `println`.
 - **Not auto-tested:** the `eframe`/`winit` shell (`app.rs`, `main.rs`), validated
